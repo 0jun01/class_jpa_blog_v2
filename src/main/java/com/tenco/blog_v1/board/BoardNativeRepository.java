@@ -74,12 +74,11 @@ public class BoardNativeRepository {
 
     /**
      * 특정 ID의 게시글을 삭제 하는 기능
+     *
      * @param id
      */
     @Transactional
     public void deleteById(int id) {
-        Query query = em.createNativeQuery("DELETE FROM board_tb WHERE id = ?");
-        query.setParameter(1, id);
-        query.executeUpdate();
+        em.remove(em.find(Board.class, id));
     }
 }
