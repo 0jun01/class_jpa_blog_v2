@@ -72,6 +72,32 @@ public class BoardController {
         return "redirect:/";
     }
 
+    // 게시글 수정 요청 기능
+    // board/{id}/update
+    @PostMapping("/board/{id}/update")
+    public String update(@PathVariable(name = "id") Integer id, @ModelAttribute BoardDTO.UpdateDTO dto) {
+        // 1. 데이터 바인딩 방식 수정
+        // 2. 인증 검사 - 로그인 여부 판단
+        User user = (User) session.getAttribute("sessionUser");
+        if (user == null) {
+            return "redirect:/login-form";
+        }
+        // 3. 권한 체크 - 내 글이 맞나?
+        Board board = boardRepository.findById(id);
+        if (board == null) {
+            return "redirect:/";
+        }
+        if (!board.getUser().getId().equals(user.getId())) {
+            return "redirect:/error-403";
+        }
+        // 4. 유효성 검사
+        // 5. 서비스 측 위임 (직접 구현) - 래파지토리 사용
+        // boardRepository.updateByIdJPQL(id,dto.getTitle(),dto.getContent());
+        boardRepository.updateByIdJPA(id, dto.getTitle(), dto.getContent());
+
+        // 6. 리다이렉트 처리
+        return "redirect:/board/" + id;
+    }
     // 주소설계 - http://localhost:8080/board/10/delete ( form 활용하기 떄문에 delete 선언)
     // form 태그에서는 GET, POST 방식만 지원하기 때문이다.
 //    @PostMapping("board/{id}/delete")
@@ -85,21 +111,14 @@ public class BoardController {
     // board/id/update
     @GetMapping("/board/{id}/update-form")
     public String updateForm(@PathVariable(name = "id") Integer id, HttpServletRequest request) {
-
-        Board board = boardNativeRepository.findById(id);
+        // 1. 게시글 조회
+        Board board = boardRepository.findById(id);
+        // 2. 요청 속성에 조회한 게시글 속성 및 값 추가
         request.setAttribute("board", board);
+        // 뷰 리졸브 - 템플릿 반환
         return "board/update-form"; // src/main/resources/templates/board/update-form.mustache
     }
 
-    // 게시글 수정 요청 기능
-    // board/{id}/update
-    @PostMapping("/board/{id}/update")
-    public String update(@PathVariable(name = "id") Integer id, @RequestParam(name = "title") String title, @RequestParam(name = "content") String content) {
-
-        boardNativeRepository.updateById(id, title, content);
-
-        return "redirect:/board/detail/" + id;
-    }
 
     @Transactional
     @PostMapping("/board/{id}/delete")

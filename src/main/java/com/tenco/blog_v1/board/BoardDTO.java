@@ -19,4 +19,19 @@ public class BoardDTO {
                     .build();
         }
     }
+
+    @Data
+    public static class UpdateDTO {
+        private String username;
+        private String title;
+        private String content;
+
+        public Board toEntity(UpdateDTO UpdateDTO) {
+            return Board.builder()
+                    .title(title)
+                    .content(content)
+                    .build();
+        }
+    }
+
 }

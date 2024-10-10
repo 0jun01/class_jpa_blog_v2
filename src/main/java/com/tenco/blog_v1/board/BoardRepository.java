@@ -57,7 +57,8 @@ public class BoardRepository {
     }
 
     /**
-     * 게시글 삭제하기 
+     * 게시글 삭제하기
+     *
      * @param id
      */
     @Transactional //트랜잭션 내에서 실행되도록 보장 
@@ -65,6 +66,26 @@ public class BoardRepository {
         Query jpql = em.createQuery("DELETE FROM Board b WHERE b.id = :id");
         jpql.setParameter("id", id);
         jpql.executeUpdate();
+    }
+
+    public void updateByIdJPQL(int id, String title, String content) {
+        String jpql = " UPDATE Board b SET b.title = :title, b.content = :content WHERE b.id = :id ";
+        Query query = em.createQuery(jpql);
+        query.setParameter("title", title);
+        query.setParameter("content", content);
+        query.setParameter("id", id);
+        query.executeUpdate();
+    }
+
+    @Transactional
+    public void updateByIdJPA(int id, String title, String content) {
+        Board board = em.find(Board.class, id);
+        if (board != null) {
+            board.setTitle(title);
+            board.setContent(content);
+        }
+        // flush 명령, commit 명령 할 필요 없이
+        // 트랜잭션을 선언하면 ---> 더티 체킹
     }
 }
 
